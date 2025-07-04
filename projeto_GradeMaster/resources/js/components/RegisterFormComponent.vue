@@ -89,16 +89,18 @@ export default {
       errors: {},
       isLoading: false,
       // Configuração de ambiente
-      apiUrl: import.meta.env.VITE_API_BASE_URL || 'http:/127.0.1:8000/api'
+      apiUrl: import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
     };
   },
   methods: {
     async submitForm() {
       this.isLoading = true;
       this.errors = {};
+
+      console.log('Enviando dados:', this.form);
       
       try {
-        const response = await axios.post(`${this.apiUrl}contas`, {
+        const response = await axios.post(`${this.apiUrl}/contas`, {
           nome_completo: this.form.nome_completo,
           email: this.form.email,
           senha: this.form.senha,
@@ -109,6 +111,8 @@ export default {
             'Accept': 'application/json'
           }
         });
+
+        console.log('Resposta da API (sucesso):', response.data);
         
         if (response.data.success) {
           toast.success('Cadastro realizado com sucesso!');
