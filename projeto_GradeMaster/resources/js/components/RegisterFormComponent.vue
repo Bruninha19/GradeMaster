@@ -20,14 +20,12 @@
       <div class="form-group">
         <label>E-mail educacional</label>
         <input 
-          class="input" 
-          type="email" 
-          v-model="form.email" 
-          :class="{ 'input-error': errors.email }"
-          required
-          pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-          title="Digite um e-mail válido"
-        />
+        class="input" 
+        type="email" 
+        v-model="form.email" 
+        :class="{ 'input-error': errors.email }"
+        required
+      />
         <span v-if="errors.email" class="error-message">
           {{ errors.email[0] }}
         </span>
@@ -91,7 +89,7 @@ export default {
       errors: {},
       isLoading: false,
       // Configuração de ambiente
-      apiUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
+      apiUrl: import.meta.env.VITE_API_BASE_URL || 'http:/127.0.1:8000/api'
     };
   },
   methods: {
@@ -100,7 +98,7 @@ export default {
       this.errors = {};
       
       try {
-        const response = await axios.post(`${this.apiUrl}/contas`, {
+        const response = await axios.post(`${this.apiUrl}contas`, {
           nome_completo: this.form.nome_completo,
           email: this.form.email,
           senha: this.form.senha,
@@ -146,17 +144,16 @@ export default {
 .form-container {
   max-width: 800px;
   width: 100%;
-  margin: 0 auto;
+  margin-left: 50px;
   padding: 40px 20px;
   background: #fff;
   border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .form-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 30px;
+  gap: 70px;
   margin-bottom: 25px;
 }
 
@@ -214,10 +211,10 @@ export default {
   cursor: pointer;
   transition: all 0.3s ease;
   width: 100%;
-  max-width: 200px;
+  max-width: 150px;
   display: block;
-  margin-left: auto;
-  margin-right: auto;
+  margin-left: 0;
+  margin-top: 70px;
 }
 
 .btn-cadastrar:hover:not(:disabled) {
