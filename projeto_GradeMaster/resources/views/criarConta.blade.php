@@ -26,20 +26,25 @@
         
         }
         .logo {
-            margin-top: -70px;
+            position: fixed;
+            z-index: 1000;
             display: flex;
+            margin-top: -90px;
             gap: 10px;
+            margin-left: 28px;
         }
         .logo img {
             height: 300px; /* Ajuste o tamanho do logo */
+            
 
         }
         .form-title {
             color: #FCA13D; /* Cor laranja do seu layout */
             font-size: 2em;
+            margin-top: 150px;
             margin-bottom: 30px;
             font-weight: bold;
-            margin-left: 40px;
+            margin-left: 73px;
             
             
         }
@@ -52,8 +57,8 @@
         </div>
         <h1 class="form-title">CRIAR CONTA</h1>
 
-        {{-- Onde o componente Vue.js será renderizado --}}
         <register-form-component></register-form-component>
+
 
     </div>
 </body>

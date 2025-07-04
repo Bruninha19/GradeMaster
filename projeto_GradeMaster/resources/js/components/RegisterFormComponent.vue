@@ -1,159 +1,249 @@
 <template>
-  <form @submit.prevent="registerUser" class="register-form">
-    <div class="form-group">
-      <label for="fullName">Nome completo</label>
-      <input type="text" id="fullName" v-model="form.full_name" required>
-      <span v-if="errors.full_name" class="error-message">{{ errors.full_name[0] }}</span>
+  <form @submit.prevent="submitForm" class="form-container">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Nome completo</label>
+        <input 
+          class="input" 
+          type="text" 
+          v-model="form.nome_completo" 
+          :class="{ 'input-error': errors.nome_completo }"
+          required
+          minlength="5"
+          maxlength="100"
+        />
+        <span v-if="errors.nome_completo" class="error-message">
+          {{ errors.nome_completo[0] }}
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label>E-mail educacional</label>
+        <input 
+          class="input" 
+          type="email" 
+          v-model="form.email" 
+          :class="{ 'input-error': errors.email }"
+          required
+          pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+          title="Digite um e-mail válido"
+        />
+        <span v-if="errors.email" class="error-message">
+          {{ errors.email[0] }}
+        </span>
+      </div>
     </div>
 
-    <div class="form-group">
-      <label for="educationalEmail">E-mail educacional</label>
-      <input type="email" id="educationalEmail" v-model="form.educational_email" required>
-      <span v-if="errors.educational_email" class="error-message">{{ errors.educational_email[0] }}</span>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Senha</label>
+        <input 
+          class="input" 
+          type="password" 
+          v-model="form.senha" 
+          :class="{ 'input-error': errors.senha }"
+          required
+          minlength="8"
+          pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
+          title="A senha deve conter pelo menos 8 caracteres, uma letra maiúscula, um número e um caractere especial"
+        />
+        <span v-if="errors.senha" class="error-message">
+          {{ errors.senha[0] }}
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label>Confirmar senha</label>
+        <input 
+          class="input" 
+          type="password" 
+          v-model="form.senha_confirmation" 
+          required
+          minlength="8"
+        />
+      </div>
     </div>
 
-    <div class="form-group">
-      <label for="password">Senha</label>
-      <input type="password" id="password" v-model="form.password" required>
-      <span v-if="errors.password" class="error-message">{{ errors.password[0] }}</span>
-    </div>
-
-    <div class="form-group">
-      <label for="confirmPassword">Confirmar senha</label>
-      <input type="password" id="confirmPassword" v-model="form.password_confirmation" required>
-      <span v-if="errors.password_confirmation" class="error-message">{{ errors.password_confirmation[0] }}</span>
-    </div>
-
-    <button type="submit" class="btn-register" :disabled="loading">
-      {{ loading ? 'CADASTRANDO...' : 'CADASTRAR' }}
+    <button 
+      type="submit" 
+      class="btn-cadastrar"
+      :disabled="isLoading"
+    >
+      {{ isLoading ? 'CADASTRANDO...' : 'CADASTRAR' }}
     </button>
-
-    <p v-if="successMessage" class="success-message">{{ successMessage }}</p>
-    <p v-if="generalError" class="error-message">{{ generalError }}</p>
   </form>
 </template>
 
 <script>
-// import axios from 'axios'; // Se não estiver global no app.js/bootstrap.js
+import axios from 'axios';
+import { toast } from 'vue3-toastify';
 
 export default {
   name: 'RegisterFormComponent',
   data() {
     return {
       form: {
-        full_name: '',
-        educational_email: '',
-        password: '',
-        password_confirmation: '',
+        nome_completo: '',
+        email: '',
+        senha: '',
+        senha_confirmation: ''
       },
       errors: {},
-      successMessage: '',
-      generalError: '',
-      loading: false,
+      isLoading: false,
+      // Configuração de ambiente
+      apiUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
     };
   },
   methods: {
-    async registerUser() {
-      this.loading = true;
+    async submitForm() {
+      this.isLoading = true;
       this.errors = {};
-      this.successMessage = '';
-      this.generalError = '';
-
-      if (this.form.password !== this.form.password_confirmation) {
-        this.errors.password_confirmation = ['As senhas não coincidem.'];
-        this.generalError = 'Por favor, corrija os erros no formulário.';
-        this.loading = false;
-        return;
-      }
-
+      
       try {
-        // A URL para onde os dados serão enviados: /api/contas
-        const response = await axios.post('http://127.0.0.1:8000/api/contas', this.form);
-
-        this.successMessage = response.data.message || 'Conta criada com sucesso!';
-        this.form = { full_name: '', educational_email: '', password: '', password_confirmation: '' };
-        console.log('Registro bem-sucedido:', response.data);
-
-      } catch (error) {
-        if (error.response) {
-          if (error.response.status === 422 && error.response.data.errors) {
-            this.errors = error.response.data.errors;
-            this.generalError = error.response.data.message || 'Por favor, corrija os erros no formulário.';
-          } else {
-            this.generalError = error.response.data.message || 'Ocorreu um erro ao registrar a conta.';
+        const response = await axios.post(`${this.apiUrl}/contas`, {
+          nome_completo: this.form.nome_completo,
+          email: this.form.email,
+          senha: this.form.senha,
+          senha_confirmation: this.form.senha_confirmation
+        }, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
           }
-        } else if (error.request) {
-          this.generalError = 'Não foi possível conectar ao servidor. Verifique sua conexão ou o servidor.';
-        } else {
-          this.generalError = 'Erro inesperado. Tente novamente.';
+        });
+        
+        if (response.data.success) {
+          toast.success('Cadastro realizado com sucesso!');
+          setTimeout(() => {
+            this.$router.push('/login');
+          }, 1500);
         }
-        console.error('Erro no registro:', error);
+      } catch (error) {
+        if (error.response?.status === 422) {
+          this.errors = error.response.data.errors;
+          toast.error('Por favor, corrija os campos destacados');
+        } else {
+          const errorMsg = error.response?.data?.message || 
+                         error.code === 'ERR_NETWORK' 
+                         ? 'Não foi possível conectar ao servidor' 
+                         : 'Erro durante o cadastro';
+          toast.error(errorMsg);
+          console.error('Detalhes do erro:', {
+            request: error.config,
+            response: error.response?.data,
+            status: error.response?.status
+          });
+        }
       } finally {
-        this.loading = false;
+        this.isLoading = false;
       }
-    },
-  },
-};
+    }
+  }
+}
 </script>
 
 <style scoped>
-/* Seus estilos originais - não alterados */
-.register-form {
-  margin-left: 40px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  background-color: #ffffff;
+.form-container {
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 40px 20px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  margin-bottom: 25px;
+}
+
 .form-group {
+  flex: 1 1 45%;
+  min-width: 250px;
   display: flex;
   flex-direction: column;
-  text-align: left;
 }
+
 .form-group label {
-  margin-bottom: 8px;
-  font-weight: bold;
-  color: #555;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #333;
+  font-size: 14px;
 }
-.form-group input {
-  background-color: #EFEFEF;
-  padding: 10px;
+
+.input {
+  padding: 12px 15px;
   border: 1px solid #ddd;
   border-radius: 6px;
-  font-size: 1em;
-  width: 400px;
+  background-color: #f9f9f9;
+  font-size: 15px;
+  width: 100%;
+  transition: border 0.3s ease;
 }
-.form-group input:focus {
-  border-color: #000;
+
+.input:focus {
   outline: none;
+  border-color: #1E88DA;
+  background-color: #fff;
 }
-.btn-register {
-  grid-column: 1 / -1; /* Ocupa as duas colunas */
-  padding: 11px 11px 11px 11px;
-  background-color: #1E88DA; /* Cor azul do botão */
+
+.input-error {
+  border-color: #ff4444;
+  background-color: #fff6f6;
+}
+
+.error-message {
+  color: #ff4444;
+  font-size: 13px;
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+.btn-cadastrar {
+  margin-top: 25px;
+  padding: 14px 28px;
+  background-color: #1E88DA;
   color: white;
   border: none;
-  border-radius: 10px;
-  font-size: 0.9em;
-  font-weight: bold;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 15px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-  margin-top: 50px;
-  width: 170px;
-  height: 42px;
+  transition: all 0.3s ease;
+  width: 100%;
+  max-width: 200px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
-.btn-register:hover {
-  background-color: #0056b3;
+
+.btn-cadastrar:hover:not(:disabled) {
+  background-color: #1865a0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
-/* Novos estilos para mensagens de erro/sucesso */
-.error-message {
-  color: #dc3545; /* Vermelho */
-  font-size: 0.85em;
-  margin-top: 5px;
+
+.btn-cadastrar:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
+  opacity: 0.8;
 }
-.success-message {
-  color: #28a745; /* Verde */
-  font-size: 0.85em;
-  margin-top: 5px;
+
+@media (max-width: 768px) {
+  .form-row {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .form-group {
+    flex: 1 1 100%;
+  }
+  
+  .btn-cadastrar {
+    max-width: 100%;
+  }
 }
 </style>

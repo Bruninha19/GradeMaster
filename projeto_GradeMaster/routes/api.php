@@ -2,23 +2,33 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\UserAccountController; // <--- Certifique-se de que esta linha está aqui!
+use App\Http\Controllers\UserAccountController;
 
 /*
 |--------------------------------------------------------------------------
 | API Routes
 |--------------------------------------------------------------------------
 |
-| Aqui você pode registrar as rotas da API para sua aplicação. Essas
-| rotas são carregadas pelo RouteServiceProvider e todas elas serão
-| atribuídas ao grupo de middleware "api".
+| Rotas da API carregadas pelo RouteServiceProvider dentro do grupo "api"
 |
 */
 
-// Esta é a rota que seu frontend está chamando para registrar a conta
 Route::resource('contas', UserAccountController::class);
+// Rotas para contas de usuário
+Route::prefix('api')->group(function () {
+    // Rota para cadastro (POST /api/contas)
+    Route::post('/contas', [UserAccountController::class, 'store'])->name('api.contas.store');
+    
+    // Rotas adicionais que você pode precisar:
+    // Route::get('/', [UserAccountController::class, 'index']); // Listar contas
+    // Route::get('/{id}', [UserAccountController::class, 'show']); // Mostrar conta específica
+});
 
-// Sua rota de user autenticado (se tiver)
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+// Rotas autenticadas (se usar Sanctum)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+    
+    // Adicione outras rotas protegidas aqui
 });

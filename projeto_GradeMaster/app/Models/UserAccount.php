@@ -4,38 +4,41 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Auth\Authenticatable as AuthenticatableTrait;
 
-// Se você planeja autenticar usuários com este modelo, ele precisaria
-// estender Authenticatable e usar o Notifiable, HasApiTokens, etc.,
-// assim como o modelo User padrão. Mas para fins de CRUD e registro simples,
-// Model é suficiente por enquanto.
-// use Illuminate\Foundation\Auth\User as Authenticatable;
-// use Illuminate\Notifications\Notifiable;
-// use Laravel\Sanctum\HasApiTokens;
-
-class UserAccount extends Model
+class UserAccount extends Model implements Authenticatable
 {
-    use HasFactory;
-    // use Notifiable, HasApiTokens; // Se você herdar de Authenticatable
+    use HasFactory, Notifiable, AuthenticatableTrait;
 
-    protected $table = 'user_accounts'; // Indique explicitamente o nome da sua tabela
+    protected $table = 'user_accounts';
 
     protected $fillable = [
         'nome_completo',
         'email',
-        'senha', // Este campo será armazenado como hash
+        'senha',
     ];
 
     protected $hidden = [
-        'senha', // Esconder o campo 'senha' quando serializar o modelo para JSON
+        'senha',
+        'remember_token',
     ];
 
-    // Se você usa created_at e updated_at (que sua migration tem)
-    // public $timestamps = true; // Isso é true por padrão, então geralmente não precisa declarar
+    // Necessário para implementar Authenticatable
+    public function getAuthPassword()
+    {
+        return $this->senha;
+    }
 
-    // Opcional: Para ter as senhas automaticamente "hashed" quando definidas (Laravel 9+)
-    // protected $casts = [
-    //     'senha' => 'hashed', // Certifique-se de que sua coluna é string em vez de text
-    // ];
-    // Se usar isso, você pode remover o Hash::make() na controller, mas Hash::make() é mais explícito.
+    // Se quiser usar mutators para formatar automaticamente
+    public function setNomeCompletoAttribute($value)
+    {
+        $this->attributes['nome_completo'] = ucwords(strtolower(trim($value)));
+    }
+
+    public function setEmailAttribute($value)
+    {
+        $this->attributes['email'] = strtolower(trim($value));
+    }
 }
